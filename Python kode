@@ -70,13 +70,13 @@ def draw_landmarks(img, detection_results):
         pinky_tip = hand_landmarks[20].y
 
         if thumb_tip < middle_finger_tip:
-             #serialInst.write(b"1")
-             pyautogui.press("volumeup")
+             serialInst.write(b"1")
+             #pyautogui.press("volumeup")
              print("ON")
 
         elif thumb_tip > wrist:
-             pyautogui.press("volumedown")
-             #serialInst.write(b"2")
+             serialInst.write(b"2")
+             #pyautogui.press("volumedown")
              print("OFF")
 
 
