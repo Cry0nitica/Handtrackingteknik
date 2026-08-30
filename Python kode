@@ -1,0 +1,114 @@
+#husk at installere alt: pip install pyserial opencv-python mediapipe PyAutoGUI numpy
+
+
+import mediapipe as mp
+from mediapipe.tasks import python
+import cv2
+import pyautogui
+import numpy as np
+import serial
+import serial.tools.list_ports
+import time
+
+base_options = python.BaseOptions(model_asset_path = "hand_landmarker.task")
+options = mp.tasks.vision.HandLandmarkerOptions(base_options = base_options, num_hands = 1)
+detector = mp.tasks.vision.HandLandmarker.create_from_options(options)
+
+
+ports = serial.tools.list_ports.comports()
+serialInst = serial.Serial()
+portsList = []
+for one in ports:
+     portsList.append(str(one))
+     print(str(one))
+
+serialInst.baudrate = 9600
+serialInst.port = "COM4"
+serialInst.open()
+
+
+
+mp_drawing = mp.tasks.vision.drawing_utils
+mp_hands = mp.tasks.vision.HandLandmarksConnections
+mp_drawing_styles = mp.tasks.vision.drawing_styles
+
+
+def draw_landmarks(img, detection_results):
+    img_copy = np.copy(img)
+
+    for hand_landmarks in detection_results.hand_landmarks:
+        mp_drawing.draw_landmarks(
+            img_copy,
+            hand_landmarks,
+            mp_hands.HAND_CONNECTIONS,
+            mp_drawing_styles.get_default_hand_landmarks_style(),
+            mp_drawing_styles.get_default_hand_connections_style()
+        )
+
+
+
+        wrist = hand_landmarks[0].y
+        thumb_cmc = hand_landmarks[1].y
+        thumb_mcp = hand_landmarks[2].y
+        thumb_ip = hand_landmarks[3].y
+        thumb_tip = hand_landmarks[4].y
+        index_finger_mcp = hand_landmarks[5].y
+        index_finger_pip = hand_landmarks[6].y
+        index_finger_dip = hand_landmarks[7].y
+        index_finger_tip = hand_landmarks[8].y
+        middle_finger_mcp = hand_landmarks[9].y
+        middle_finger_pip = hand_landmarks[10].y
+        middle_finger_dip = hand_landmarks[11].y
+        middle_finger_tip = hand_landmarks[12].y
+        ring_finger_mcp = hand_landmarks[13].y
+        ring_finger_pip = hand_landmarks[14].y
+        ring_finger_dip = hand_landmarks[15].y
+        ring_finger_tip = hand_landmarks[16].y
+        pinky_mcp = hand_landmarks[17].y
+        pinky_pip = hand_landmarks[18].y
+        pinky_dip = hand_landmarks[19].y
+        pinky_tip = hand_landmarks[20].y
+
+        if thumb_tip < middle_finger_tip:
+             #serialInst.write(b"1")
+             pyautogui.press("volumeup")
+             print("ON")
+
+        elif thumb_tip > wrist:
+             pyautogui.press("volumedown")
+             #serialInst.write(b"2")
+             print("OFF")
+
+
+    return img_copy
+
+
+def detect_hands(image):
+    rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    img = mp.Image(image_format = mp.ImageFormat.SRGB, data = rgb)
+
+    detection_result = detector.detect(img)
+    drawn_image = draw_landmarks(img.numpy_view(), detection_result)
+
+    return cv2.cvtColor(drawn_image, cv2.COLOR_RGB2BGR)
+
+
+cap = cv2.VideoCapture(0)
+
+
+while cap.isOpened():
+    ret, frame = cap.read()
+
+    if ret:
+        img = detect_hands(frame)
+        cv2.imshow("img", img)
+
+        key = cv2.waitKey(1)
+        if key == (27):
+            break
+    else:
+        break
+
+
+cap.release()
+cv2.destroyAllWindows()
