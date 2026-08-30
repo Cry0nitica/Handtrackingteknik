@@ -1,25 +1,22 @@
-bool Gustav = false;
+const int outputPin = 11;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(11, OUTPUT);
+  pinMode(outputPin, OUTPUT);
+  digitalWrite(outputPin, LOW);
 }
 
 void loop() {
   if (Serial.available() > 0) {
-    String msg = Serial.readString();
-    Serial.println("Besked modtaget");
+    char msg = Serial.read();
 
-    if (msg == "1"){
-      digitalWrite(11, HIGH);
+    if (msg == '1') {
+      digitalWrite(outputPin, HIGH);
       Serial.println("Besked er 1");
     }
-    else if (msg == "2"){
-      digitalWrite(11, LOW);
+    else if (msg == '2') {
+      digitalWrite(outputPin, LOW);
       Serial.println("Besked er 2");
     }
   }
-  if (Gustav==true) {
-    digitalWrite(11, HIGH);
-  } 
 }
